@@ -1,0 +1,31 @@
+{
+  "name": "GitHub Projects Story Points",
+  "short_name": "SCRUM GitHub",
+  "description": "Add story points to GitHub project lists",
+  "version": "1.0.0",
+  "author": "Nicola Peduzzi",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://github.com/*"
+      ],
+      "include_globs": [
+        "*/projects/*",
+        "*/issues*",
+        "*/pulls*"
+      ],
+      "js": [
+        "github-storypoints.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "manifest_version" : 2,
+  "icons": {
+    "16": "github-storypoints-icon-16.png",
+    "32": "github-storypoints-icon-32.png",
+    "24": "github-storypoints-icon-24.png",
+    "48": "github-storypoints-icon-48.png",
+    "128": "github-storypoints-icon-128.png"
+  }
+}
