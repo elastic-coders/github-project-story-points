@@ -20,6 +20,7 @@ of story points in them next to the count of cards.
 1. Select the directory you downloaded all the files to.
 
 **GitHub Projects Story Points** should now appear in your Extensions lists
+
 1. Reload the extension page or click the "Reload" link under **GitHub Projects Story Points**
 1. Open your Projects or Issues pages in your Repo on GitHub.com
 1. You should now see any items with (#) preceeding the title added up as (# points)
