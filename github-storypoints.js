@@ -103,7 +103,7 @@ var start = debounce(() => {
   const projects = d.getElementsByClassName('project-columns-container');
   if (projects.length > 0) {
     const project = projects[0];
-    const columns = Array.from(project.getElementsByClassName('col-project-custom'));
+    const columns = Array.from(project.getElementsByClassName('js-project-column')); // Was 'col-project-custom', but that's gitenterprise; github.com is 'project-column', fortunately, both have 'js-project-column'
     for (let column of columns) {
       const addStoryPoints = ((c) => debounce(() => {
         resetStoryPointsForColumn(c);
