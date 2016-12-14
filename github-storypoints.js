@@ -1,7 +1,7 @@
 (function (d, w) {
 'use strict';
 
-var pointsRegEx = /^\(([\d\.]+)\)(.+)/i;
+var pointsRegEx = /^(\(([\d\.]+)\)\s*)?(.+?)(\s*\[([\d\.]+)\])?$/im; // new RegExp("^(\(([\d\.]+)\))?(.+)(\[([\d\.]+)\])?$", "i"); // Was: /^\(([\d\.]+)\)(.+)/i; 
 
 var debounce = function (func, wait, immediate) {
   var timeout;
@@ -18,6 +18,10 @@ var debounce = function (func, wait, immediate) {
   };
 };
 
+var pluralize = (value) => (
+  value === 1 ? '' : 's'
+);
+
 var resetStoryPointsForColumn = (column) => {
   const customElements = Array.from(column.getElementsByClassName('github-project-story-points'));
   for (let e of customElements) {
@@ -31,15 +35,14 @@ var resetStoryPointsForColumn = (column) => {
   }
 };
 
-var titleWithPoints = (title, points) => (`
-  <span class="github-project-story-points counter">
-    <span style="display:none">(</span>${points}<span style="display:none">)</span>
-  </span>
-  ${title}
-`);
+var titleWithPoints = (title, points, spent) => (
+  `<span style="font-weight:bold">${title}</span><br \>
+  <span class="github-project-story-points counter"
+  style="font-size:xx-small">${spent} spent of ${points}</span>`
+);
 
-var titleWithTotalPoints = (title, points) => (`${title}
-  <small class="github-project-story-points">(${points} ${points === 1 ? 'point' : 'points'})</small>`
+var titleWithTotalPoints = (title, points, spent) => (
+    `${title}<span class="github-project-story-points" style="font-size:xx-small"> item${pluralize(title)} (${spent} spent of ${points})</span>`
 );
 
 var addStoryPointsForColumn = (column) => {
@@ -65,29 +68,33 @@ var addStoryPointsForColumn = (column) => {
         pointsRegEx.exec(titleElement.innerText) ||
         [null, '0', titleElement.innerText]
       );
-      const storyPoints = parseFloat(story[1]);
-      const storyTitle = story[2];
+      const storyPoints = parseFloat(story[2]) || 0;
+      const storyTitle = story[3];
+      const spentPoints = parseFloat(story[5]) || 0;
       return {
         element: card,
         titleElement,
         title,
         titleNoPoints: storyTitle,
         storyPoints,
+        spentPoints,
       };
     });
   const columnCountElement = column.getElementsByClassName('js-column-card-count')[0];
-  const columnStoryPoints = columnCards.reduce((acc, card) => acc + card.storyPoints, 0);
 
-  // Apply DOM changes
-  if (columnStoryPoints) {
-    columnCountElement.innerHTML = titleWithTotalPoints(columnCards.length, columnStoryPoints);
-  }
-
+  let columnStoryPoints = 0;
+  let columnSpentPoints = 0;
   for (let card of columnCards) {
-    if (card.storyPoints) {
+    columnStoryPoints += card.storyPoints;
+    columnSpentPoints += card.spentPoints;
+    if (card.storyPoints || card.spentPoints) {
       card.titleElement.dataset.gpspOriginalContent = card.title;
-      card.titleElement.innerHTML = titleWithPoints(card.titleNoPoints, card.storyPoints);
+      card.titleElement.innerHTML = titleWithPoints(card.titleNoPoints, card.storyPoints, card.spentPoints);
     }
+  }
+  // Apply DOM changes:
+  if (columnStoryPoints || columnSpentPoints) {
+    columnCountElement.innerHTML = titleWithTotalPoints(columnCards.length, columnStoryPoints, columnSpentPoints);
   }
 };
 
@@ -103,7 +110,7 @@ var start = debounce(() => {
   const projects = d.getElementsByClassName('project-columns-container');
   if (projects.length > 0) {
     const project = projects[0];
-    const columns = Array.from(project.getElementsByClassName('col-project-custom'));
+    const columns = Array.from(project.getElementsByClassName('js-project-column')); // Was 'col-project-custom', but that's gitenterprise; github.com is 'project-column', fortunately, both have 'js-project-column'
     for (let column of columns) {
       const addStoryPoints = ((c) => debounce(() => {
         resetStoryPointsForColumn(c);
@@ -127,10 +134,11 @@ var start = debounce(() => {
       pointsRegEx.exec(titleElement.innerText) ||
       [null, '0', titleElement.innerText]
     );
-    const storyPoints = parseFloat(story[1]);
-    const storyTitle = story[2];
-    if (storyPoints) {
-      titleElement.innerHTML = titleWithPoints(storyTitle, storyPoints);
+    const storyPoints = parseFloat(story[2]) || 0;
+    const storyTitle = story[3];
+    const spentPoints = parseFloat(story[5]) || 0;
+    if (storyPoints || spentPoints) {
+      titleElement.innerHTML = titleWithPoints(storyTitle, storyPoints, spentPoints);
     }
   }
 }, 50);
