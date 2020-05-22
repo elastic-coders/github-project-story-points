@@ -51,7 +51,7 @@ var addStoryPointsForColumn = (column) => {
     .filter(card => !card.classList.contains('sortable-ghost'))
     .map(card => {
       const titleElementContainer = Array
-        .from(card.getElementsByTagName('h5'))
+        .from(card.getElementsByClassName('h5'))
         .concat(Array.from(card.getElementsByTagName('p')))[0];
       const titleElementLink = (
         titleElementContainer.getElementsByTagName &&
